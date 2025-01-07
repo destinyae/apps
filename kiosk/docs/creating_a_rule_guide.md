@@ -1,16 +1,16 @@
 # Creating a Rule: Guide
 
-When an item is purchased in a Kiosk, a TransferRequest potato is created, and the only way to resolve it and unblock the transaction is to confirm the request in the matching TransferPolicy. This guide explains how TransferPolicy works and how new rules can be implemented and added into a policy.
+When an item is purchased in a Kiosk, a TransferRequest potato is created, and the only way to resolve it and unblock the transaction is to confirm the request in the matching TransferPolicy. This guide explains how TransferPolicy works and how new rules can be implemented and added to a policy.
 
 ## Basics
 
-An item of a type T can only be traded in Kiosks if the TransferPolicy for T exists and available to the buyer. This requirement is based on a simple fact that the TransferRequest issued on purchase must be resolved in a matching TransferPolicy and if there isn't one or buyer can't access it, the transaction will fail.
+An item of type T can only be traded in Kiosks if the TransferPolicy for T exists and is available to the buyer. This requirement is based on a simple fact that the TransferRequest issued on purchase must be resolved in a matching TransferPolicy and if there isn't one or buyer can't access it, the transaction will fail.
 
 This system was designed to give maximum freedom and flexibility for creators: by taking the transfer policy logic out of the trading primitive we make sure that the policies can be set only by creators, and as long as the trading primitive is used, enforcements are under their control. Effectively creators became closer to the trading ecosystem and got an important and solid role in the process.
 
 ## Architecture
 
-By default, a single TransferPolicy does not enforce anything - if a buyer attempts to confirm their TransferRequest, it will go through. However, the system allows setting so-called "Rules". Their logic is simple: someone can publish a new rule module, for example "fixed fee", and let it be "added" or "set" for the TransferPolicy. Once the Rule is added, TransferRequest needs to collect a TransferReceipt marking that the requiement specified in the Rule was completed.
+By default, a single TransferPolicy does not enforce anything - if a buyer attempts to confirm their TransferRequest, it will go through. However, the system allows setting so-called "Rules". Their logic is simple: someone can publish a new rule module, for example "fixed fee", and let it be "added" or "set" for the TransferPolicy. Once the Rule is added, TransferRequest needs to collect a TransferReceipt marking that the requirement specified in the Rule was completed.
 
 \[TODO\]
 
@@ -18,7 +18,7 @@ By default, a single TransferPolicy does not enforce anything - if a buyer attem
 
 ## Rule structure: Dummy
 
-Every rule would follow the same structure and implement required types:
+Every rule would follow the same structure and implement the required types:
 
 1. RuleWitness struct
 2. Config struct stored in the TransferPolicy
@@ -75,7 +75,7 @@ module examples::dummy_rule {
 }
 ```
 
-This module contains no configuration and requires a `Coin<SUI>` of any value (even "0"), so it's easy to imagine that every buyer would create a zero Coin and pass it to get the Receipt. The only thing this Rule module is good for is illustration and a skeleton. Goes without saying but *this code should never be used in production*.
+This module contains no configuration and requires a `Coin<SUI>` of any value (even "0"), so it's easy to imagine that every buyer would create a zero Coin and pass it to get the Receipt. The only thing this Rule module is good for is an illustration and a skeleton. Goes without saying but *this code should never be used in production*.
 
 ## Reading the Request: Royalty
 
@@ -83,9 +83,9 @@ To implement a percentage-based fee (a very common scenario - royalty fee), a Ru
 
 1. Item ID
 2. Amount paid (SUI)
-3. From ID - the object which was used for selling (eg Kiosk)
+3. From ID - the object that was used for selling (eg Kiosk)
 
-> To provide access to these fields, the `sui::transfer_policy` module has a set of getter functions which are available to anyone: "paid()", "item()" and "from()"
+> To provide access to these fields, the `sui::transfer_policy` module has a set of getter functions that are available to anyone: "paid()", "item()" and "from()"
 
 ```move
 module examples::royalty_rule {
@@ -150,7 +150,7 @@ module examples::time_rule {
         policy::add_rule(Rule {}, policy, cap, Config { start_time })
     }
 
-    /// Pass in the Clock and prove that current time value is higher
+    /// Pass in the Clock and prove that the current time value is higher
     /// than the `start_time`
     public fun confirm_time<T>(
         policy: &TransferPolicy<T>,
@@ -200,7 +200,7 @@ module examples::witness_rule {
 }
 ```
 
-The "witness_rule" is very generic and can be used to require a custom Witness depending on the settings. It is a simple and yet a powerful way to link a custom marketplace / trading logic to the TransferPolicy. With a slight modification, the rule can be turned into a generic Capability requirement (basically any object, even a TransferPolicy for a different type or a TransferRequest - no limit to what could be done).
+The "witness_rule" is very generic and can be used to require a custom Witness depending on the settings. It is a simple and yet powerful way to link a custom marketplace/trading logic to the TransferPolicy. With a slight modification, the rule can be turned into a generic Capability requirement (basically any object, even a TransferPolicy for a different type or a TransferRequest - no limit to what could be done).
 
 ```move
 module examples::capability_rule {
